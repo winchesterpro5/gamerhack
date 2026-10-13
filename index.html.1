@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PS4 7.00 - 13.00 FW GoldHEN Host by GamerHack</title>
+  <script>
+        // Проверка статуса кэша (остается в head, это правильно)
+        if (window.applicationCache && window.applicationCache.status === 0) {
+            window.location.replace("cache900.html");
+		}
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+	  html {
+		background-image: url('img.jpg');
+		background-position: center;
+		background-size: cover;
+		background-attachment: fixed;
+		background-repeat: no-repeat;
+		background-color: #24272b;
+		color: white;
+		text-align: center;
+		overflow: hidden;
+	}
+	h1 {
+		text-shadow: 0.1em 0.1em 0.2em black;
+		font-size: 25px;
+		color: white;
+	}
+	a {
+		text-decoration: none;
+	}
+	#progress, #menu {
+		display: block;
+	}
+	#crypto, #tools, #lnx, #mods {
+		display: none;
+	}
+	.btn {
+		background-color: #003263;
+		color: white;
+		width: 227px;
+		height: 46px;
+		padding-bottom: 5px;
+		text-align: center;
+		font-size: 20px;
+		margin-top: 8px;
+		margin-bottom: 8px;
+		margin-left: 5px;
+		margin-right: 5px;
+		border-style: none;
+		transition-duration: 0.4s;
+		cursor: pointer;
+		border-radius: 4px;
+	}
+	.btn:hover {
+		background-color: #0069d9;
+	}
+	.btn-onln {
+		background-color: #076300;
+	}
+	.btn-onln:hover {
+		background-color: #18891b;
+	}
+	.btn-toolbox {
+		background-color: #ae2301;
+	}
+	.btn-toolbox:hover {
+		background-color: #d42a01;
+	}
+	.btn-ps5 {
+		background-color: #3d3f4e;
+	}
+	.btn-ps5:hover {
+		background-color: #c2c2c2;
+		color: #303030;
+	}
+  </style>
+</head>
+<body>
+
+<h1>PS4 7.00 - 13.00 FW GoldHEN Host by GamerHack</h1>
+<hr>
+<br>
+<!-- Исправлено: добавлены кавычки для id -->
+<h1 id="msgs" style="font-size: 30px;margin-top: 77px;margin-bottom: 455px;">Loading GoldHEN v2.4b18.10... Please Wait</h1>
+<h1 style="margin-top: 43px;">Special Thanks to:<a href="https://twitter.com/_AlAzif" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@_AlAzif</a>ChendoChap<a href="https://x.com/Kameleonre_" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@Kameleonre_</a>SiSTR0 Abc</h1>
+
+<script>
+	// Принудительно регистрируем элемент в глобальной области видимости window
+	window.msgs = document.getElementById('msgs');
+
+	function sleep(ms = 0) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+	window.addEventListener('load', async function () {
+		try {
+			if (window.msgs) window.msgs.innerHTML = "Ожидание стабилизации памяти (5с)...";
+			
+			// Стабилизируем память браузера PS4 (очень важно для PSFree)
+			await sleep(5000);
+
+			if (window.msgs) window.msgs.innerHTML = "Запуск эксплойта WebKit...";
+
+			// Толкаем первую доминошку в цепочке импортов
+			import('./900/alert.js'); 
+		} catch (err) {
+			alert("Критический сбой инициализации хоста!\n" + err.message);
+		}
+	});
+</script>
+</body>
+</html>

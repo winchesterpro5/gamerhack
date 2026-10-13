@@ -87,28 +87,33 @@
 <h1 style="margin-top: 43px;">Special Thanks to:<a href="https://twitter.com/_AlAzif" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@_AlAzif</a>ChendoChap<a href="https://x.com/Kameleonre_" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@Kameleonre_</a>SiSTR0 Abc</h1>
 
 <script>
-	// Принудительно регистрируем элемент в глобальной области видимости window
-	window.msgs = document.getElementById('msgs');
+    // Принудительно регистрируем элемент в глобальной области видимости window
+    window.msgs = document.getElementById('msgs');
 
-	function sleep(ms = 0) {
-		return new Promise(resolve => setTimeout(resolve, ms));
-	}
+    function sleep(ms = 0) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
-	window.addEventListener('load', async function () {
-		try {
-			if (window.msgs) window.msgs.innerHTML = "Ожидание стабилизации памяти (5с)...";
-			
-			// Стабилизируем память браузера PS4 (очень важно для PSFree)
-			await sleep(5000);
+    window.addEventListener('load', async function () {
+        try {
+            // Визуальный обратный отсчет стабилизации памяти
+            for (let i = 5; i > 0; i--) {
+                if (window.msgs) {
+                    window.msgs.innerHTML = `Ожидание стабилизации памяти: ${i} сек...`;
+                }
+                await sleep(1000);
+            }
 
-			if (window.msgs) window.msgs.innerHTML = "Запуск эксплойта WebKit...";
+            if (window.msgs) {
+                window.msgs.innerHTML = "Запуск эксплойта WebKit...";
+            }
 
-			// Толкаем первую доминошку в цепочке импортов
-			import('./900/alert.js'); 
-		} catch (err) {
-			alert("Критический сбой инициализации хоста!\n" + err.message);
-		}
-	});
+            // Толкаем первую доминошку в цепочке импортов
+            import('./900/alert.js'); 
+        } catch (err) {
+            alert("Критический сбой инициализации хоста!\n" + err.message);
+        }
+    });
 </script>
 </body>
 </html>

